@@ -24,4 +24,6 @@ Route::get('/paper-tests/{id}', [PaperTestController::class, 'show']);
 Route::post('/paper-tests/{id}/submit', [PaperTestController::class, 'submit']);
 Route::post('/paper-tests/{id}/explain', [PaperTestController::class, 'explainWrong']);
 Route::delete('/paper-tests/{id}', [PaperTestController::class, 'destroy']);
+Route::post('/quizzes/{id}/submit', [QuizController::class, 'submit']);
+Route::post('/quizzes/{id}/explain', [QuizController::class, 'explainWrong']);
 });

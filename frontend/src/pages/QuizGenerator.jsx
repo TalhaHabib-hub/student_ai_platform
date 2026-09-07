@@ -1,16 +1,22 @@
 import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { FileText, X, CheckCircle2, XCircle, HelpCircle } from 'lucide-react';
 import api from '../api';
-import { FileText } from 'lucide-react';
+
 
 function QuizGenerator() {
     const [notes, setNotes] = useState('');
-    const [file, setFile] = useState(null);
+    const [files, setFiles] = useState([]);
     const [numQuestions, setNumQuestions] = useState(5);
     const [quiz, setQuiz] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [dragActive, setDragActive] = useState(false);
+    const [selectedAnswers, setSelectedAnswers] = useState({});
+const [submitted, setSubmitted] = useState(false);
+const [submitting, setSubmitting] = useState(false);
+const [explanations, setExplanations] = useState({});
+const [explainingIndex, setExplainingIndex] = useState(null);
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
 
@@ -26,8 +32,8 @@ function QuizGenerator() {
             return;
         }
 
-        if (!notes.trim() && !file) {
-            setError('Please paste notes or upload a file.');
+        if (!notes.trim() && files.length === 0) {
+            setError('Please paste notes or upload at least one file.');
             setLoading(false);
             return;
         }
@@ -35,7 +41,7 @@ function QuizGenerator() {
         try {
             const formData = new FormData();
             if (notes.trim()) formData.append('notes', notes);
-            if (file) formData.append('file', file);
+            files.forEach((f) => formData.append('files[]', f));
             formData.append('num_questions', numQuestions);
 
             const response = await api.post('/generate-quiz', formData, {
@@ -45,26 +51,69 @@ function QuizGenerator() {
                 },
             });
             setQuiz(response.data);
+           
+setSelectedAnswers({});
+setSubmitted(false);
+setExplanations({});
         } catch (err) {
-            setError('Could not generate quiz. Try shorter notes or a smaller file.');
+            setError('Could not generate quiz. Try shorter notes or fewer/smaller files.');
         } finally {
             setLoading(false);
         }
     };
+const selectAnswer = (questionIndex, option) => {
+    if (submitted) return;
+    setSelectedAnswers((prev) => ({ ...prev, [questionIndex]: option }));
+};
 
-    const handleFileSelect = (selectedFile) => {
-        if (selectedFile) {
-            setFile(selectedFile);
-            setNotes('');
-        }
+const handleSubmitQuiz = async () => {
+    setSubmitting(true);
+    const token = localStorage.getItem('token');
+    const answersArray = quiz.questions.map((_, i) => selectedAnswers[i] ?? null);
+
+    try {
+        const response = await api.post(
+            `/quizzes/${quiz.id}/submit`,
+            { answers: answersArray },
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setQuiz(response.data);
+        setSubmitted(true);
+    } catch (err) {
+        setError('Could not submit quiz.');
+    } finally {
+        setSubmitting(false);
+    }
+};
+
+const handleExplain = async (index) => {
+    setExplainingIndex(index);
+    const token = localStorage.getItem('token');
+    try {
+        const response = await api.post(
+            `/quizzes/${quiz.id}/explain`,
+            { question_index: index },
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setExplanations((prev) => ({ ...prev, [index]: response.data.explanation }));
+    } catch (err) {
+        setExplanations((prev) => ({ ...prev, [index]: 'Could not generate explanation.' }));
+    } finally {
+        setExplainingIndex(null);
+    }
+};
+    const addFiles = (newFiles) => {
+        setFiles((prev) => [...prev, ...Array.from(newFiles)]);
+    };
+
+    const removeFile = (index) => {
+        setFiles((prev) => prev.filter((_, i) => i !== index));
     };
 
     const handleDrop = (e) => {
         e.preventDefault();
         setDragActive(false);
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            handleFileSelect(e.dataTransfer.files[0]);
-        }
+        if (e.dataTransfer.files) addFiles(e.dataTransfer.files);
     };
 
     return (
@@ -75,18 +124,18 @@ function QuizGenerator() {
 
             <div className="max-w-2xl mx-auto px-6 py-10">
                 <h2 className="text-3xl font-bold text-white mb-1">Generate a Quiz</h2>
-                <p className="text-gray-400 mb-6">Paste your notes or upload a PDF/text file.</p>
+                <p className="text-gray-400 mb-6">Paste notes, or upload photos, PDFs, or text files — you can add several.</p>
 
                 <form onSubmit={handleGenerate} className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
                     <textarea
                         value={notes}
-                        onChange={(e) => { setNotes(e.target.value); setFile(null); }}
+                        onChange={(e) => setNotes(e.target.value)}
                         placeholder="Paste your study notes here..."
                         rows={6}
                         className="w-full bg-white/5 border border-white/10 text-white placeholder-gray-500 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                     />
 
-                    <div className="text-center text-gray-500 text-sm my-3">— or —</div>
+                    <div className="text-center text-gray-500 text-sm my-3">— and/or —</div>
 
                     <div
                         onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
@@ -100,20 +149,34 @@ function QuizGenerator() {
                         <input
                             ref={fileInputRef}
                             type="file"
-                            accept=".pdf,.txt"
+                            accept=".pdf,.txt,.jpg,.jpeg,.png"
+                            multiple
                             className="hidden"
-                            onChange={(e) => handleFileSelect(e.target.files[0])}
+                            onChange={(e) => addFiles(e.target.files)}
                         />
-                       {file ? (
-    <p className="text-indigo-400 font-medium flex items-center justify-center gap-2">
-        <FileText className="w-4 h-4" /> {file.name}
-    </p>
-) : (
-                            <p className="text-gray-400">
-                                Drag & drop a PDF or .txt file here, or click to browse
-                            </p>
-                        )}
+                        <p className="text-gray-400">
+                            Drag & drop photos, PDFs, or text files here, or click to browse (multiple allowed)
+                        </p>
                     </div>
+
+                    {files.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                            {files.map((f, i) => (
+                                <div key={i} className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+                                    <span className="flex items-center gap-2 text-sm text-indigo-300 truncate">
+                                        <FileText className="w-4 h-4 shrink-0" /> {f.name}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => removeFile(i)}
+                                        className="text-gray-500 hover:text-red-400"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                     <div className="mt-4">
                         <label className="text-gray-300 text-sm font-medium block mb-2">
@@ -149,30 +212,102 @@ function QuizGenerator() {
                     </div>
                 )}
 
-                {quiz && (
-                    <div className="mt-8 space-y-4">
-                        <h3 className="text-lg font-semibold text-white">Your Quiz</h3>
-                        {quiz.questions.map((q, index) => (
-                            <div key={index} className="bg-white/5 backdrop-blur border border-white/10 rounded-xl p-5">
-                                <p className="font-medium text-white mb-3">{index + 1}. {q.question}</p>
-                                <ul className="space-y-2">
-                                    {q.options.map((option, i) => (
-                                        <li
-                                            key={i}
-                                            className={`px-3 py-2 rounded-lg text-sm ${
-                                                option === q.answer
-                                                    ? 'bg-green-500/10 border border-green-500/30 text-green-400 font-medium'
-                                                    : 'bg-white/5 text-gray-300'
-                                            }`}
-                                        >
-                                            {option === q.answer ? '✓ ' : ''}{option}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
+{quiz && (
+    <div className="mt-8 space-y-4">
+        <h3 className="text-lg font-semibold text-white">Your Quiz</h3>
+
+        {submitted && (
+            <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 flex gap-6">
+                <div>
+                    <p className="text-gray-400 text-sm">Correct</p>
+                    <p className="text-2xl font-bold text-green-400">{quiz.correct_count}</p>
+                </div>
+                <div>
+                    <p className="text-gray-400 text-sm">Wrong</p>
+                    <p className="text-2xl font-bold text-red-400">{quiz.wrong_count}</p>
+                </div>
+            </div>
+        )}
+
+        {quiz.questions.map((q, index) => {
+            const selected = selectedAnswers[index];
+            const isCorrect = submitted && selected === q.answer;
+            const isWrong = submitted && selected && selected !== q.answer;
+
+            return (
+                <div key={index} className="bg-white/5 backdrop-blur border border-white/10 rounded-xl p-5">
+                    <div className="flex justify-between items-start mb-3">
+                        <p className="font-medium text-white">{index + 1}. {q.question}</p>
+                        {submitted && (
+                            isCorrect ? <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0 ml-2" />
+                            : isWrong ? <XCircle className="w-5 h-5 text-red-400 shrink-0 ml-2" />
+                            : null
+                        )}
                     </div>
-                )}
+
+                    <div className="space-y-2">
+                        {q.options.map((option, i) => {
+                            const isSelected = selected === option;
+                            const isTheCorrectAnswer = option === q.answer;
+
+                            let optionStyle = 'bg-white/5 text-gray-300 border-white/10';
+                            if (submitted) {
+                                if (isTheCorrectAnswer) {
+                                    optionStyle = 'bg-green-500/10 border-green-500/30 text-green-400 font-medium';
+                                } else if (isSelected) {
+                                    optionStyle = 'bg-red-500/10 border-red-500/30 text-red-400 font-medium';
+                                }
+                            } else if (isSelected) {
+                                optionStyle = 'bg-indigo-500/20 border-indigo-500 text-indigo-300 font-medium';
+                            }
+
+                            return (
+                                <button
+                                    key={i}
+                                    type="button"
+                                    onClick={() => selectAnswer(index, option)}
+                                    disabled={submitted}
+                                    className={`w-full text-left px-3 py-2 rounded-lg border text-sm transition ${optionStyle} ${!submitted ? 'hover:border-indigo-400 cursor-pointer' : 'cursor-default'}`}
+                                >
+                                    {option}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {isWrong && (
+                        <div className="mt-3">
+                            {explanations[index] ? (
+                                <p className="text-sm text-gray-400 bg-white/5 rounded-lg px-3 py-2">
+                                    {explanations[index]}
+                                </p>
+                            ) : (
+                                <button
+                                    onClick={() => handleExplain(index)}
+                                    disabled={explainingIndex === index}
+                                    className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 disabled:opacity-50"
+                                >
+                                    <HelpCircle className="w-3.5 h-3.5" />
+                                    {explainingIndex === index ? 'Thinking...' : 'Why?'}
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
+            );
+        })}
+
+        {!submitted && (
+            <button
+                onClick={handleSubmitQuiz}
+                disabled={submitting}
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 text-white font-medium rounded-lg py-3 transition shadow-lg shadow-indigo-600/30"
+            >
+                {submitting ? 'Submitting...' : 'Submit Quiz'}
+            </button>
+        )}
+    </div>
+)}
             </div>
         </div>
     );

@@ -9,13 +9,17 @@ class Quiz extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'source_notes',
-        'questions',
-    ];
+   protected $fillable = [
+    'user_id',
+    'source_notes',
+    'questions',
+    'answers',
+    'correct_count',
+    'wrong_count',
+];
 
-    protected $casts = [
-        'questions' => 'array',
-    ];
+protected $casts = [
+    'questions' => 'array',
+    'answers' => 'array',
+];
 }

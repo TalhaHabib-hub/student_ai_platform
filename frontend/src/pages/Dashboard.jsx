@@ -49,24 +49,15 @@ function Dashboard() {
 
                 <div className="grid sm:grid-cols-2 gap-6">
                     <Link
-                        to="/quiz"
-                        className="group bg-white/5 hover:bg-white/10 backdrop-blur border border-white/10 rounded-2xl p-6 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-600/10"
-                    >
-                        <FileText className="w-8 h-8 mb-3 text-indigo-400" />
-                        <h3 className="text-lg font-semibold text-white group-hover:text-indigo-400 transition">Generate a Quiz</h3>
-                        <p className="text-gray-400 text-sm mt-1">Turn your notes into a practice quiz using AI.</p>
-                    </Link>
-
-                    <Link
-                        to="/my-quizzes"
-                        className="group bg-white/5 hover:bg-white/10 backdrop-blur border border-white/10 rounded-2xl p-6 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-purple-600/10"
-                    >
-                        <BookOpen className="w-8 h-8 mb-3 text-purple-400" />
-                        <h3 className="text-lg font-semibold text-white group-hover:text-purple-400 transition">My Quizzes</h3>
-                        <p className="text-gray-400 text-sm mt-1">Review quizzes you've already generated.</p>
-                    </Link>
-                    <Link
-    to="/paper-upload"
+    to="/my-quizzes"
+    className="group bg-white/5 hover:bg-white/10 backdrop-blur border border-white/10 rounded-2xl p-6 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-600/10"
+>
+    <FileText className="w-8 h-8 mb-3 text-indigo-400" />
+    <h3 className="text-lg font-semibold text-white group-hover:text-indigo-400 transition">Generate a Quiz</h3>
+    <p className="text-gray-400 text-sm mt-1">Turn your notes into a practice quiz using AI.</p>
+</Link>
+                   <Link
+    to="/my-paper-tests"
     className="group bg-white/5 hover:bg-white/10 backdrop-blur border border-white/10 rounded-2xl p-6 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-pink-600/10"
 >
     <ScanLine className="w-8 h-8 mb-3 text-pink-400" />

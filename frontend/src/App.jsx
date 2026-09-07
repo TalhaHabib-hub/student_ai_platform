@@ -7,11 +7,13 @@ import MyQuizzes from './pages/MyQuizzes';
 import Settings from './pages/Settings';
 import PaperUpload from './pages/PaperUpload';
 import PaperTest from './pages/PaperTest';
+import MyPaperTests from './pages/MyPaperTests';
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
+                <Route path="/my-paper-tests" element={<MyPaperTests />} />
                 <Route path="/paper-test/:id" element={<PaperTest />} />
                 <Route path="/" element={<Navigate to="/login" />} />
                 <Route path="/login" element={<Login />} />
