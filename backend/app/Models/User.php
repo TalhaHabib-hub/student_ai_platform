@@ -16,12 +16,20 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'profile_photo',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
     ];
+    
+    protected $appends = ['profile_photo_url'];
+
+public function getProfilePhotoUrlAttribute()
+{
+    return $this->profile_photo ? asset('storage/' . $this->profile_photo) : null;
+}
 
     protected function casts(): array
     {

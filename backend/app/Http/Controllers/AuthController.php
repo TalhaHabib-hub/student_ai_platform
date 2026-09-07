@@ -30,6 +30,28 @@ class AuthController extends Controller
             'token' => $token,
         ]);
     }
+    public function deleteAccount(Request $request)
+{
+    $user = $request->user();
+    $user->tokens()->delete();
+    $user->delete();
+
+    return response()->json(['message' => 'Account deleted']);
+}
+
+public function updateProfilePhoto(Request $request)
+{
+    $request->validate([
+        'photo' => 'required|image|max:2048',
+    ]);
+
+    $user = $request->user();
+    $path = $request->file('photo')->store('profile-photos', 'public');
+    $user->profile_photo = $path;
+    $user->save();
+
+   return response()->json(['profile_photo_url' => asset('storage/' . $path)]);
+}
 
     public function login(Request $request)
     {

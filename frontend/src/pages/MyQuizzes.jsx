@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
+import { Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 
 function MyQuizzes() {
     const [quizzes, setQuizzes] = useState([]);
@@ -27,7 +28,20 @@ function MyQuizzes() {
     const toggleQuiz = (id) => {
         setOpenQuizId(openQuizId === id ? null : id);
     };
+    const handleDelete = async (id, e) => {
+    e.stopPropagation();
+    if (!window.confirm('Delete this quiz?')) return;
 
+    const token = localStorage.getItem('token');
+    try {
+        await api.delete(`/quizzes/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        setQuizzes(quizzes.filter((q) => q.id !== id));
+    } catch (err) {
+        alert('Could not delete quiz.');
+    }
+};
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-[#0f0f1a] text-gray-400">
             Loading your quizzes...
@@ -64,22 +78,34 @@ function MyQuizzes() {
                 <div className="space-y-4">
                     {quizzes.map((quiz) => (
                         <div key={quiz.id} className="bg-white/5 backdrop-blur border border-white/10 rounded-xl p-5">
-                            <div
-                                onClick={() => toggleQuiz(quiz.id)}
-                                className="cursor-pointer flex justify-between items-start"
-                            >
-                                <div>
-                                    <p className="font-medium text-white">
-                                        {quiz.source_notes.length > 60
-                                            ? quiz.source_notes.slice(0, 60) + '...'
-                                            : quiz.source_notes}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        {new Date(quiz.created_at).toLocaleString()} · {quiz.questions.length} questions
-                                    </p>
-                                </div>
-                                <span className="text-gray-500">{openQuizId === quiz.id ? '▲' : '▼'}</span>
-                            </div>
+  <div
+    onClick={() => toggleQuiz(quiz.id)}
+    className="cursor-pointer flex justify-between items-start"
+>
+    <div>
+        <p className="font-medium text-white">
+            {quiz.source_notes.length > 60
+                ? quiz.source_notes.slice(0, 60) + '...'
+                : quiz.source_notes}
+        </p>
+        <p className="text-xs text-gray-500 mt-1">
+            {new Date(quiz.created_at).toLocaleString()} · {quiz.questions.length} questions
+        </p>
+    </div>
+    <div className="flex items-center gap-3">
+        <button
+    onClick={(e) => handleDelete(quiz.id, e)}
+    className="text-red-400 hover:text-red-300"
+>
+    <Trash2 className="w-4 h-4" />
+</button>
+{openQuizId === quiz.id ? (
+    <ChevronUp className="w-4 h-4 text-gray-500" />
+) : (
+    <ChevronDown className="w-4 h-4 text-gray-500" />
+)}
+    </div>
+</div>
 
                             {openQuizId === quiz.id && (
                                 <div className="mt-4 space-y-3 border-t border-white/10 pt-4">

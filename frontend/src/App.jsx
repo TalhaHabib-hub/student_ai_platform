@@ -4,17 +4,23 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import QuizGenerator from './pages/QuizGenerator';
 import MyQuizzes from './pages/MyQuizzes';
+import Settings from './pages/Settings';
+import PaperUpload from './pages/PaperUpload';
+import PaperTest from './pages/PaperTest';
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
+                <Route path="/paper-test/:id" element={<PaperTest />} />
                 <Route path="/" element={<Navigate to="/login" />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/quiz" element={<QuizGenerator />} />
                 <Route path="/my-quizzes" element={<MyQuizzes />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/paper-upload" element={<PaperUpload />} />
             </Routes>
         </BrowserRouter>
     );

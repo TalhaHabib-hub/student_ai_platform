@@ -1,13 +1,18 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
+import { FileText } from 'lucide-react';
 
 function QuizGenerator() {
     const [notes, setNotes] = useState('');
+    const [file, setFile] = useState(null);
+    const [numQuestions, setNumQuestions] = useState(5);
     const [quiz, setQuiz] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [dragActive, setDragActive] = useState(false);
     const navigate = useNavigate();
+    const fileInputRef = useRef(null);
 
     const handleGenerate = async (e) => {
         e.preventDefault();
@@ -21,17 +26,44 @@ function QuizGenerator() {
             return;
         }
 
+        if (!notes.trim() && !file) {
+            setError('Please paste notes or upload a file.');
+            setLoading(false);
+            return;
+        }
+
         try {
-            const response = await api.post(
-                '/generate-quiz',
-                { notes },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const formData = new FormData();
+            if (notes.trim()) formData.append('notes', notes);
+            if (file) formData.append('file', file);
+            formData.append('num_questions', numQuestions);
+
+            const response = await api.post('/generate-quiz', formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
             setQuiz(response.data);
         } catch (err) {
-            setError('Could not generate quiz. Try shorter or clearer notes.');
+            setError('Could not generate quiz. Try shorter notes or a smaller file.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleFileSelect = (selectedFile) => {
+        if (selectedFile) {
+            setFile(selectedFile);
+            setNotes('');
+        }
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleFileSelect(e.dataTransfer.files[0]);
         }
     };
 
@@ -43,17 +75,65 @@ function QuizGenerator() {
 
             <div className="max-w-2xl mx-auto px-6 py-10">
                 <h2 className="text-3xl font-bold text-white mb-1">Generate a Quiz</h2>
-                <p className="text-gray-400 mb-6">Paste your study notes and get an instant practice quiz.</p>
+                <p className="text-gray-400 mb-6">Paste your notes or upload a PDF/text file.</p>
 
                 <form onSubmit={handleGenerate} className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
                     <textarea
                         value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
+                        onChange={(e) => { setNotes(e.target.value); setFile(null); }}
                         placeholder="Paste your study notes here..."
-                        rows={8}
-                        required
+                        rows={6}
                         className="w-full bg-white/5 border border-white/10 text-white placeholder-gray-500 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                     />
+
+                    <div className="text-center text-gray-500 text-sm my-3">— or —</div>
+
+                    <div
+                        onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+                        onDragLeave={() => setDragActive(false)}
+                        onDrop={handleDrop}
+                        onClick={() => fileInputRef.current.click()}
+                        className={`border-2 border-dashed rounded-lg px-4 py-8 text-center cursor-pointer transition ${
+                            dragActive ? 'border-indigo-500 bg-indigo-500/10' : 'border-white/20 hover:border-white/40'
+                        }`}
+                    >
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".pdf,.txt"
+                            className="hidden"
+                            onChange={(e) => handleFileSelect(e.target.files[0])}
+                        />
+                       {file ? (
+    <p className="text-indigo-400 font-medium flex items-center justify-center gap-2">
+        <FileText className="w-4 h-4" /> {file.name}
+    </p>
+) : (
+                            <p className="text-gray-400">
+                                Drag & drop a PDF or .txt file here, or click to browse
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="mt-4">
+                        <label className="text-gray-300 text-sm font-medium block mb-2">
+                            Number of questions: <span className="text-indigo-400 font-bold">{numQuestions}</span>
+                        </label>
+                        <input
+                            type="range"
+                            min="5"
+                            max="50"
+                            step="5"
+                            value={numQuestions}
+                            onChange={(e) => setNumQuestions(Number(e.target.value))}
+                            className="w-full accent-indigo-500"
+                        />
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>5</span>
+                            <span>50</span>
+                        </div>
+                    </div>
+
                     <button
                         type="submit"
                         disabled={loading}
