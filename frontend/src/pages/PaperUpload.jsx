@@ -53,22 +53,22 @@ function PaperUpload() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0f0f1a]">
-            <nav className="border-b border-white/10 px-6 py-4">
-                <Link to="/dashboard" className="text-indigo-400 hover:text-indigo-300 font-medium">← Back to Dashboard</Link>
+        <div className="min-h-screen bg-slate-50">
+            <nav className="bg-white border-b border-slate-200 px-6 py-4">
+                <Link to="/my-paper-tests" className="text-indigo-600 hover:text-indigo-700 font-medium">← Back to My Paper Tests</Link>
             </nav>
 
             <div className="max-w-2xl mx-auto px-6 py-10">
-                <h2 className="text-3xl font-bold text-white mb-1">Digital Paper Sheet</h2>
-                <p className="text-gray-400 mb-6">Upload a photo or PDF of an exam paper and take it as an interactive test.</p>
+                <h2 className="text-3xl font-bold text-slate-900 mb-1">Digital Paper Sheet</h2>
+                <p className="text-slate-500 mb-6">Upload a photo or PDF of an exam paper and take it as an interactive test.</p>
 
-                <form onSubmit={handleSubmit} className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
+                <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
                     <input
                         type="text"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="Paper title (e.g. MDCAT Biology Mock 25)"
-                        className="w-full bg-white/5 border border-white/10 text-white placeholder-gray-500 rounded-lg px-4 py-2.5 mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 rounded-xl px-4 py-2.5 mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     />
 
                     <div
@@ -76,8 +76,8 @@ function PaperUpload() {
                         onDragLeave={() => setDragActive(false)}
                         onDrop={handleDrop}
                         onClick={() => fileInputRef.current.click()}
-                        className={`border-2 border-dashed rounded-lg px-4 py-10 text-center cursor-pointer transition ${
-                            dragActive ? 'border-indigo-500 bg-indigo-500/10' : 'border-white/20 hover:border-white/40'
+                        className={`border-2 border-dashed rounded-xl px-4 py-10 text-center cursor-pointer transition ${
+                            dragActive ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'
                         }`}
                     >
                         <input
@@ -88,11 +88,11 @@ function PaperUpload() {
                             onChange={(e) => setFile(e.target.files[0])}
                         />
                         {file ? (
-                            <p className="text-indigo-400 font-medium flex items-center justify-center gap-2">
+                            <p className="text-indigo-600 font-medium flex items-center justify-center gap-2">
                                 <FileText className="w-4 h-4" /> {file.name}
                             </p>
                         ) : (
-                            <p className="text-gray-400">
+                            <p className="text-slate-500">
                                 Drag & drop a photo or PDF of the paper, or click to browse
                             </p>
                         )}
@@ -101,14 +101,14 @@ function PaperUpload() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="mt-4 w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 text-white font-medium rounded-lg py-2.5 transition shadow-lg shadow-indigo-600/30"
+                        className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl py-2.5 transition"
                     >
                         {loading ? 'Reading paper...' : 'Read Paper & Start Test'}
                     </button>
                 </form>
 
                 {error && (
-                    <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-lg px-4 py-2 mt-4">
+                    <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg px-4 py-2 mt-4">
                         {error}
                     </div>
                 )}

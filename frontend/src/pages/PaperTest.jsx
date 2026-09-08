@@ -31,13 +31,11 @@ function PaperTest() {
         .then((response) => {
             setPaperTest(response.data);
             if (response.data.answers) {
-                // already submitted previously
                 setSubmitted(true);
                 const restored = {};
                 response.data.answers.forEach((a, i) => { restored[i] = a.selected; });
                 setSelectedAnswers(restored);
             } else {
-                // start the timer
                 timerRef.current = setInterval(() => {
                     setSecondsElapsed((s) => s + 1);
                 }, 1000);
@@ -102,23 +100,23 @@ function PaperTest() {
     };
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-[#0f0f1a] text-gray-400">
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-400">
             Loading paper test...
         </div>
     );
 
     if (error) return (
-        <div className="min-h-screen flex items-center justify-center bg-[#0f0f1a] text-red-400">
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 text-red-600">
             {error}
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-[#0f0f1a]">
-            <nav className="border-b border-white/10 px-6 py-4 flex justify-between items-center">
-                <Link to="/dashboard" className="text-indigo-400 hover:text-indigo-300 font-medium">← Back to Dashboard</Link>
+        <div className="min-h-screen bg-slate-50">
+            <nav className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                <Link to="/my-paper-tests" className="text-indigo-600 hover:text-indigo-700 font-medium">← Back to My Paper Tests</Link>
                 {!submitted && (
-                    <div className="flex items-center gap-2 text-gray-300">
+                    <div className="flex items-center gap-2 text-slate-600">
                         <Clock className="w-4 h-4" />
                         <span>{formatTime(secondsElapsed)}</span>
                     </div>
@@ -126,21 +124,21 @@ function PaperTest() {
             </nav>
 
             <div className="max-w-2xl mx-auto px-6 py-10">
-                <h2 className="text-2xl font-bold text-white mb-1">{paperTest.title}</h2>
+                <h2 className="text-2xl font-bold text-slate-900 mb-1">{paperTest.title}</h2>
 
                 {submitted && (
-                    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 mb-6 flex flex-wrap gap-6">
+                    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-6 flex flex-wrap gap-6">
                         <div>
-                            <p className="text-gray-400 text-sm">Correct</p>
-                            <p className="text-2xl font-bold text-green-400">{paperTest.correct_count}</p>
+                            <p className="text-slate-500 text-sm">Correct</p>
+                            <p className="text-2xl font-bold text-green-600">{paperTest.correct_count}</p>
                         </div>
                         <div>
-                            <p className="text-gray-400 text-sm">Wrong</p>
-                            <p className="text-2xl font-bold text-red-400">{paperTest.wrong_count}</p>
+                            <p className="text-slate-500 text-sm">Wrong</p>
+                            <p className="text-2xl font-bold text-red-600">{paperTest.wrong_count}</p>
                         </div>
                         <div>
-                            <p className="text-gray-400 text-sm">Time Taken</p>
-                            <p className="text-2xl font-bold text-white">{formatTime(paperTest.time_taken_seconds)}</p>
+                            <p className="text-slate-500 text-sm">Time Taken</p>
+                            <p className="text-2xl font-bold text-slate-900">{formatTime(paperTest.time_taken_seconds)}</p>
                         </div>
                     </div>
                 )}
@@ -152,12 +150,12 @@ function PaperTest() {
                         const isWrong = submitted && selected && selected !== q.correct_answer;
 
                         return (
-                            <div key={index} className="bg-white/5 backdrop-blur border border-white/10 rounded-xl p-5">
+                            <div key={index} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
                                 <div className="flex justify-between items-start mb-3">
-                                    <p className="font-medium text-white">{index + 1}. {q.question}</p>
+                                    <p className="font-medium text-slate-900">{index + 1}. {q.question}</p>
                                     {submitted && (
-                                        isCorrect ? <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0 ml-2" />
-                                        : isWrong ? <XCircle className="w-5 h-5 text-red-400 shrink-0 ml-2" />
+                                        isCorrect ? <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 ml-2" />
+                                        : isWrong ? <XCircle className="w-5 h-5 text-red-600 shrink-0 ml-2" />
                                         : null
                                     )}
                                 </div>
@@ -167,15 +165,15 @@ function PaperTest() {
                                         const isSelected = selected === option;
                                         const isTheCorrectAnswer = option === q.correct_answer;
 
-                                        let optionStyle = 'bg-white/5 text-gray-300 border-white/10';
+                                        let optionStyle = 'bg-slate-50 text-slate-700 border-slate-200';
                                         if (submitted) {
                                             if (isTheCorrectAnswer) {
-                                                optionStyle = 'bg-green-500/10 border-green-500/30 text-green-400 font-medium';
+                                                optionStyle = 'bg-green-50 border-green-300 text-green-700 font-medium';
                                             } else if (isSelected && !isTheCorrectAnswer) {
-                                                optionStyle = 'bg-red-500/10 border-red-500/30 text-red-400 font-medium';
+                                                optionStyle = 'bg-red-50 border-red-300 text-red-700 font-medium';
                                             }
                                         } else if (isSelected) {
-                                            optionStyle = 'bg-indigo-500/20 border-indigo-500 text-indigo-300 font-medium';
+                                            optionStyle = 'bg-indigo-50 border-indigo-400 text-indigo-700 font-medium';
                                         }
 
                                         return (
@@ -195,14 +193,14 @@ function PaperTest() {
                                 {isWrong && (
                                     <div className="mt-3">
                                         {explanations[index] ? (
-                                            <p className="text-sm text-gray-400 bg-white/5 rounded-lg px-3 py-2">
+                                            <p className="text-sm text-slate-600 bg-slate-50 rounded-lg px-3 py-2">
                                                 {explanations[index]}
                                             </p>
                                         ) : (
                                             <button
                                                 onClick={() => handleExplain(index)}
                                                 disabled={explainingIndex === index}
-                                                className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 disabled:opacity-50"
+                                                className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-700 disabled:opacity-50"
                                             >
                                                 <HelpCircle className="w-3.5 h-3.5" />
                                                 {explainingIndex === index ? 'Thinking...' : 'Why?'}
@@ -219,7 +217,7 @@ function PaperTest() {
                     <button
                         onClick={handleSubmit}
                         disabled={submitting}
-                        className="mt-6 w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 text-white font-medium rounded-lg py-3 transition shadow-lg shadow-indigo-600/30"
+                        className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl py-3 transition"
                     >
                         {submitting ? 'Submitting...' : 'Submit Test'}
                     </button>
