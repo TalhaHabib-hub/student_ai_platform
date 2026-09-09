@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { CheckCircle2, XCircle, HelpCircle, Clock } from 'lucide-react';
 import api from '../api';
+import ThemeToggle from '../components/ThemeToggle';
 
 function PaperTest() {
     const { id } = useParams();
@@ -98,50 +99,52 @@ function PaperTest() {
         const secs = totalSeconds % 60;
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
+if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-black text-slate-400 dark:text-zinc-500">
+        Loading paper test...
+    </div>
+);
 
-    if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-400">
-            Loading paper test...
-        </div>
-    );
+if (error) return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-black text-red-600 dark:text-red-400">
+        {error}
+    </div>
+);
 
-    if (error) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 text-red-600">
-            {error}
-        </div>
-    );
-
-    return (
-        <div className="min-h-screen bg-slate-50">
-            <nav className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center">
-                <Link to="/my-paper-tests" className="text-indigo-600 hover:text-indigo-700 font-medium">← Back to My Paper Tests</Link>
+return (
+    <div className="min-h-screen bg-slate-50 dark:bg-black transition-colors">
+        <nav className="bg-white dark:bg-zinc-950 border-b border-slate-200 dark:border-orange-500/20 px-6 py-4 flex justify-between items-center">
+            <Link to="/my-paper-tests" className="text-indigo-600 dark:text-orange-500 hover:text-indigo-700 dark:hover:text-orange-400 font-medium">← Back to My Paper Tests</Link>
+            <div className="flex items-center gap-4">
                 {!submitted && (
-                    <div className="flex items-center gap-2 text-slate-600">
+                    <div className="flex items-center gap-2 text-slate-600 dark:text-zinc-400">
                         <Clock className="w-4 h-4" />
                         <span>{formatTime(secondsElapsed)}</span>
                     </div>
                 )}
-            </nav>
+                <ThemeToggle />
+            </div>
+        </nav>
 
-            <div className="max-w-2xl mx-auto px-6 py-10">
-                <h2 className="text-2xl font-bold text-slate-900 mb-1">{paperTest.title}</h2>
+        <div className="max-w-2xl mx-auto px-6 py-10">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{paperTest.title}</h2>
 
-                {submitted && (
-                    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-6 flex flex-wrap gap-6">
-                        <div>
-                            <p className="text-slate-500 text-sm">Correct</p>
-                            <p className="text-2xl font-bold text-green-600">{paperTest.correct_count}</p>
-                        </div>
-                        <div>
-                            <p className="text-slate-500 text-sm">Wrong</p>
-                            <p className="text-2xl font-bold text-red-600">{paperTest.wrong_count}</p>
-                        </div>
-                        <div>
-                            <p className="text-slate-500 text-sm">Time Taken</p>
-                            <p className="text-2xl font-bold text-slate-900">{formatTime(paperTest.time_taken_seconds)}</p>
-                        </div>
+            {submitted && (
+                <div className="bg-white dark:bg-zinc-950 border border-slate-200 dark:border-orange-500/20 rounded-2xl p-6 shadow-sm mb-6 flex flex-wrap gap-6">
+                    <div>
+                        <p className="text-slate-500 dark:text-zinc-400 text-sm">Correct</p>
+                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">{paperTest.correct_count}</p>
                     </div>
-                )}
+                    <div>
+                        <p className="text-slate-500 dark:text-zinc-400 text-sm">Wrong</p>
+                        <p className="text-2xl font-bold text-red-600 dark:text-red-400">{paperTest.wrong_count}</p>
+                    </div>
+                    <div>
+                        <p className="text-slate-500 dark:text-zinc-400 text-sm">Time Taken</p>
+                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatTime(paperTest.time_taken_seconds)}</p>
+                    </div>
+                </div>
+            )}
 
                 <div className="space-y-5">
                     {paperTest.questions.map((q, index) => {
@@ -150,9 +153,9 @@ function PaperTest() {
                         const isWrong = submitted && selected && selected !== q.correct_answer;
 
                         return (
-                            <div key={index} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-                                <div className="flex justify-between items-start mb-3">
-                                    <p className="font-medium text-slate-900">{index + 1}. {q.question}</p>
+                                                    <div key={index} className="bg-white dark:bg-zinc-950 border border-slate-200 dark:border-orange-500/20 rounded-xl p-5 shadow-sm">
+                            <div className="flex justify-between items-start mb-3">
+                                <p className="font-medium text-slate-900 dark:text-white">{index + 1}. {q.question}</p>
                                     {submitted && (
                                         isCorrect ? <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 ml-2" />
                                         : isWrong ? <XCircle className="w-5 h-5 text-red-600 shrink-0 ml-2" />
@@ -165,15 +168,15 @@ function PaperTest() {
                                         const isSelected = selected === option;
                                         const isTheCorrectAnswer = option === q.correct_answer;
 
-                                        let optionStyle = 'bg-slate-50 text-slate-700 border-slate-200';
+                                                                let optionStyle = 'bg-slate-50 dark:bg-black text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-800';
                                         if (submitted) {
                                             if (isTheCorrectAnswer) {
-                                                optionStyle = 'bg-green-50 border-green-300 text-green-700 font-medium';
+                                                optionStyle = 'bg-green-50 dark:bg-green-500/10 border-green-300 dark:border-green-500/30 text-green-700 dark:text-green-400 font-medium';
                                             } else if (isSelected && !isTheCorrectAnswer) {
-                                                optionStyle = 'bg-red-50 border-red-300 text-red-700 font-medium';
+                                                optionStyle = 'bg-red-50 dark:bg-red-500/10 border-red-300 dark:border-red-500/30 text-red-700 dark:text-red-400 font-medium';
                                             }
                                         } else if (isSelected) {
-                                            optionStyle = 'bg-indigo-50 border-indigo-400 text-indigo-700 font-medium';
+                                            optionStyle = 'bg-indigo-50 dark:bg-orange-500/10 border-indigo-400 dark:border-orange-500 text-indigo-700 dark:text-orange-400 font-medium';
                                         }
 
                                         return (
@@ -182,7 +185,7 @@ function PaperTest() {
                                                 type="button"
                                                 onClick={() => selectAnswer(index, option)}
                                                 disabled={submitted}
-                                                className={`w-full text-left px-4 py-2.5 rounded-lg border text-sm transition ${optionStyle} ${!submitted ? 'hover:border-indigo-400 cursor-pointer' : 'cursor-default'}`}
+                                                                                                className={`w-full text-left px-4 py-2.5 rounded-lg border text-sm transition ${optionStyle} ${!submitted ? 'hover:border-indigo-400 dark:hover:border-orange-500 cursor-pointer' : 'cursor-default'}`}
                                             >
                                                 {option}
                                             </button>
@@ -190,17 +193,17 @@ function PaperTest() {
                                     })}
                                 </div>
 
-                                {isWrong && (
+                                                              {isWrong && (
                                     <div className="mt-3">
                                         {explanations[index] ? (
-                                            <p className="text-sm text-slate-600 bg-slate-50 rounded-lg px-3 py-2">
+                                            <p className="text-sm text-slate-600 dark:text-zinc-400 bg-slate-50 dark:bg-black rounded-lg px-3 py-2">
                                                 {explanations[index]}
                                             </p>
                                         ) : (
                                             <button
                                                 onClick={() => handleExplain(index)}
                                                 disabled={explainingIndex === index}
-                                                className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-700 disabled:opacity-50"
+                                                className="flex items-center gap-1 text-xs text-indigo-600 dark:text-orange-500 hover:text-indigo-700 dark:hover:text-orange-400 disabled:opacity-50"
                                             >
                                                 <HelpCircle className="w-3.5 h-3.5" />
                                                 {explainingIndex === index ? 'Thinking...' : 'Why?'}
@@ -213,11 +216,11 @@ function PaperTest() {
                     })}
                 </div>
 
-                {!submitted && (
+                             {!submitted && (
                     <button
                         onClick={handleSubmit}
                         disabled={submitting}
-                        className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl py-3 transition"
+                        className="mt-6 w-full bg-indigo-600 dark:bg-orange-600 hover:bg-indigo-700 dark:hover:bg-orange-500 disabled:opacity-50 text-white font-semibold rounded-xl py-3 transition"
                     >
                         {submitting ? 'Submitting...' : 'Submit Test'}
                     </button>

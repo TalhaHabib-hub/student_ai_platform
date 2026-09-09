@@ -31,10 +31,10 @@ function ProfileMenu({ user }) {
 
     return (
         <div className="relative" ref={menuRef}>
-            <button
-                onClick={() => setOpen(!open)}
-                className="w-10 h-10 rounded-full overflow-hidden border-2 border-slate-200 hover:border-indigo-400 transition flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-500"
-            >
+           <button
+    onClick={() => setOpen(!open)}
+    className="w-10 h-10 rounded-full overflow-hidden border-2 border-slate-200 dark:border-orange-500/30 hover:border-indigo-400 dark:hover:border-orange-500 transition flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-500 dark:from-orange-600 dark:to-orange-800"
+>
                 {user.profile_photo_url ? (
                     <img
                         src={user.profile_photo_url}
@@ -47,25 +47,25 @@ function ProfileMenu({ user }) {
             </button>
 
             {open && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-50">
-                    <div className="px-4 py-3 border-b border-slate-100">
-                        <p className="text-slate-900 font-medium text-sm truncate">{user.name}</p>
-                        <p className="text-slate-500 text-xs truncate">{user.email}</p>
-                    </div>
-                    <Link
-                        to="/settings"
-                        onClick={() => setOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition"
-                    >
-                        <SettingsIcon className="w-4 h-4" /> Settings
-                    </Link>
-                    <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-2 text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition"
-                    >
-                        <LogOut className="w-4 h-4" /> Log Out
-                    </button>
-                </div>
+               <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-orange-500/20 rounded-xl shadow-xl overflow-hidden z-50">
+    <div className="px-4 py-3 border-b border-slate-100 dark:border-zinc-800">
+        <p className="text-slate-900 dark:text-white font-medium text-sm truncate">{user.name}</p>
+        <p className="text-slate-500 dark:text-zinc-400 text-xs truncate">{user.email}</p>
+    </div>
+    <Link
+        to="/settings"
+        onClick={() => setOpen(false)}
+        className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-900 transition"
+    >
+        <SettingsIcon className="w-4 h-4" /> Settings
+    </Link>
+    <button
+        onClick={handleLogout}
+        className="w-full flex items-center gap-2 text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition"
+    >
+        <LogOut className="w-4 h-4" /> Log Out
+    </button>
+</div>
             )}
         </div>
     );
