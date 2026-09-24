@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FileText, ScanLine, GraduationCap } from 'lucide-react';
+import { FileText, ScanLine, GraduationCap, BarChart3, Compass } from 'lucide-react';
 import ProfileMenu from '../components/ProfileMenu';
 import ThemeToggle from '../components/ThemeToggle';
 import api from '../api';
@@ -67,6 +67,23 @@ function Dashboard() {
                         <h3 className="text-lg font-semibold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-orange-400 transition">Digital Paper Sheet</h3>
                         <p className="text-slate-500 dark:text-zinc-400 text-sm mt-1">Upload an exam paper and take it as an interactive test.</p>
                     </Link>
+                    <Link
+    to="/analytics"
+    className="group bg-white dark:bg-zinc-950 hover:shadow-lg border border-slate-200 dark:border-orange-500/20 dark:hover:border-orange-500/50 rounded-2xl p-6 transition hover:-translate-y-1"
+>
+    <BarChart3 className="w-8 h-8 mb-3 text-emerald-600 dark:text-orange-500" />
+    <h3 className="text-lg font-semibold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-orange-400 transition">Your Progress</h3>
+    <p className="text-slate-500 dark:text-zinc-400 text-sm mt-1">See charts of your quizzes, accuracy, and activity.</p>
+</Link>
+
+<Link
+    to="/roadmap"
+    className="group bg-white dark:bg-zinc-950 hover:shadow-lg border border-slate-200 dark:border-orange-500/20 dark:hover:border-orange-500/50 rounded-2xl p-6 transition hover:-translate-y-1"
+>
+    <Compass className="w-8 h-8 mb-3 text-amber-600 dark:text-orange-500" />
+    <h3 className="text-lg font-semibold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-orange-400 transition">Your Roadmap</h3>
+    <p className="text-slate-500 dark:text-zinc-400 text-sm mt-1">AI-found strengths, weaknesses, and next steps.</p>
+</Link>
                 </div>
             </div>
         </div>

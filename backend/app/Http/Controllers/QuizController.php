@@ -53,15 +53,20 @@ public function explainWrong(Request $request, $id)
     }
 
     $index = $request->question_index;
-    $question = $quiz->questions[$index];
-    $selected = $quiz->answers[$index]['selected'] ?? 'no answer';
+    $questions = $quiz->questions;
+    $answers = $quiz->answers;
+    $question = $questions[$index];
+    $selected = $answers[$index]['selected'] ?? 'no answer';
 
     $apiKey = config('services.gemini.key');
+
     $prompt = "Question: {$question['question']}\n" .
               "Options: " . implode(', ', $question['options']) . "\n" .
-              "Correct answer: {$question['answer']}\n" .
+              "Listed correct answer: {$question['answer']}\n" .
               "Student selected: {$selected}\n\n" .
-              "In around 15 words, explain why the student's selected answer is wrong and why the correct answer is right.";
+              "Using your own subject knowledge, double-check whether the 'Listed correct answer' is actually right. " .
+              "Respond ONLY with valid JSON (no markdown) in this exact format: " .
+              '{"actual_correct_answer": "the option that is truly correct", "student_was_actually_correct": true or false, "explanation": "around 15 words explaining why"}';
 
     $response = Http::timeout(30)->post(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={$apiKey}",
@@ -72,8 +77,38 @@ public function explainWrong(Request $request, $id)
         return response()->json(['error' => 'Could not generate explanation'], 500);
     }
 
-    $explanation = trim($response->json('candidates.0.content.parts.0.text'));
-    return response()->json(['explanation' => $explanation]);
+    $text = $response->json('candidates.0.content.parts.0.text');
+    $cleanText = trim(str_replace(['```json', '```'], '', $text));
+    $result = json_decode($cleanText, true);
+
+    if (!$result || !isset($result['explanation'])) {
+        return response()->json(['error' => 'Could not parse explanation'], 500);
+    }
+
+    $corrected = false;
+
+    if (!empty($result['student_was_actually_correct']) && $result['actual_correct_answer'] !== $question['answer']) {
+        $questions[$index]['answer'] = $result['actual_correct_answer'];
+        $answers[$index]['is_correct'] = true;
+
+        $correctCount = collect($answers)->where('is_correct', true)->count();
+        $wrongCount = count($answers) - $correctCount;
+
+        $quiz->update([
+            'questions' => $questions,
+            'answers' => $answers,
+            'correct_count' => $correctCount,
+            'wrong_count' => $wrongCount,
+        ]);
+
+        $corrected = true;
+    }
+
+    return response()->json([
+        'explanation' => $result['explanation'],
+        'corrected' => $corrected,
+        'quiz' => $quiz->fresh(),
+    ]);
 }
 
     public function destroy(Request $request, $id)

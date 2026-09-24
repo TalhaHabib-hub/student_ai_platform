@@ -71,46 +71,70 @@ public function submit(Request $request, $id)
 
 public function explainWrong(Request $request, $id)
 {
-    $request->validate([
-        'question_index' => 'required|integer',
-    ]);
+    $request->validate(['question_index' => 'required|integer']);
 
-    $paperTest = PaperTest::where('id', $id)
-        ->where('user_id', $request->user()->id)
-        ->first();
-
+    $paperTest = PaperTest::where('id', $id)->where('user_id', $request->user()->id)->first();
     if (!$paperTest) {
         return response()->json(['error' => 'Not found'], 404);
     }
 
     $index = $request->question_index;
-    $question = $paperTest->questions[$index];
-    $selected = $paperTest->answers[$index]['selected'] ?? 'no answer';
+    $questions = $paperTest->questions;
+    $answers = $paperTest->answers;
+    $question = $questions[$index];
+    $selected = $answers[$index]['selected'] ?? 'no answer';
 
     $apiKey = config('services.gemini.key');
 
     $prompt = "Question: {$question['question']}\n" .
               "Options: " . implode(', ', $question['options']) . "\n" .
-              "Correct answer: {$question['correct_answer']}\n" .
+              "Listed correct answer: {$question['correct_answer']}\n" .
               "Student selected: {$selected}\n\n" .
-              "In around 15 words, explain why the student's selected answer is wrong and why the correct answer is right.";
+              "Using your own subject knowledge, double-check whether the 'Listed correct answer' is actually right — paper answer keys can be wrong. " .
+              "Respond ONLY with valid JSON (no markdown) in this exact format: " .
+              '{"actual_correct_answer": "the option that is truly correct", "student_was_actually_correct": true or false, "explanation": "around 15 words explaining why"}';
 
     $response = Http::timeout(30)->post(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={$apiKey}",
-        [
-            'contents' => [
-                ['parts' => [['text' => $prompt]]]
-            ]
-        ]
+        ['contents' => [['parts' => [['text' => $prompt]]]]]
     );
 
     if ($response->failed()) {
         return response()->json(['error' => 'Could not generate explanation'], 500);
     }
 
-    $explanation = trim($response->json('candidates.0.content.parts.0.text'));
+    $text = $response->json('candidates.0.content.parts.0.text');
+    $cleanText = trim(str_replace(['```json', '```'], '', $text));
+    $result = json_decode($cleanText, true);
 
-    return response()->json(['explanation' => $explanation]);
+    if (!$result || !isset($result['explanation'])) {
+        return response()->json(['error' => 'Could not parse explanation'], 500);
+    }
+
+    $corrected = false;
+
+    if (!empty($result['student_was_actually_correct']) && $result['actual_correct_answer'] !== $question['correct_answer']) {
+        $questions[$index]['correct_answer'] = $result['actual_correct_answer'];
+        $answers[$index]['is_correct'] = true;
+
+        $correctCount = collect($answers)->where('is_correct', true)->count();
+        $wrongCount = count($answers) - $correctCount;
+
+        $paperTest->update([
+            'questions' => $questions,
+            'answers' => $answers,
+            'correct_count' => $correctCount,
+            'wrong_count' => $wrongCount,
+        ]);
+
+        $corrected = true;
+    }
+
+    return response()->json([
+        'explanation' => $result['explanation'],
+        'corrected' => $corrected,
+        'paper_test' => $paperTest->fresh(),
+    ]);
 }
 
 public function index(Request $request)

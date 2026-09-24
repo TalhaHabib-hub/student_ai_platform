@@ -101,21 +101,27 @@ function QuizGenerator() {
     };
 
     const handleExplain = async (index) => {
-        setExplainingIndex(index);
-        const token = localStorage.getItem('token');
-        try {
-            const response = await api.post(
-                `/quizzes/${quiz.id}/explain`,
-                { question_index: index },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setExplanations((prev) => ({ ...prev, [index]: response.data.explanation }));
-        } catch (err) {
-            setExplanations((prev) => ({ ...prev, [index]: 'Could not generate explanation.' }));
-        } finally {
-            setExplainingIndex(null);
+    setExplainingIndex(index);
+    const token = localStorage.getItem('token');
+    try {
+        const response = await api.post(
+            `/quizzes/${quiz.id}/explain`,
+            { question_index: index },
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setExplanations((prev) => ({
+            ...prev,
+            [index]: { text: response.data.explanation, corrected: response.data.corrected },
+        }));
+        if (response.data.corrected && response.data.quiz) {
+            setQuiz(response.data.quiz);
         }
-    };
+    } catch (err) {
+        setExplanations((prev) => ({ ...prev, [index]: { text: 'Could not generate explanation.', corrected: false } }));
+    } finally {
+        setExplainingIndex(null);
+    }
+};
 
     return (
     <div className="min-h-screen bg-slate-50 dark:bg-black transition-colors">
@@ -277,13 +283,18 @@ function QuizGenerator() {
                                         })}
                                     </div>
 
-                                                       {isWrong && (
+                                                     {(isWrong || explanations[index]) && (
                         <div className="mt-3">
                             {explanations[index] ? (
-                                <p className="text-sm text-slate-600 dark:text-zinc-400 bg-slate-50 dark:bg-black rounded-lg px-3 py-2">
-                                    {explanations[index]}
-                                </p>
-                            ) : (
+    <p className={`text-sm rounded-lg px-3 py-2 ${
+        explanations[index].corrected
+            ? 'text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-500/10'
+            : 'text-slate-600 dark:text-zinc-400 bg-slate-50 dark:bg-black'
+    }`}>
+        {explanations[index].corrected && <strong>✓ Auto-corrected — your answer was actually right. </strong>}
+        {explanations[index].text}
+    </p>
+) : (
                                 <button
                                     onClick={() => handleExplain(index)}
                                     disabled={explainingIndex === index}

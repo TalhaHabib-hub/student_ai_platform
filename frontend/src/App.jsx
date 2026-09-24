@@ -9,12 +9,15 @@ import PaperUpload from './pages/PaperUpload';
 import PaperTest from './pages/PaperTest';
 import MyPaperTests from './pages/MyPaperTests';
 import Landing from './pages/Landing';
+import AnalyticsDashboard from './pages/AnalyticsDashboard';
+import Roadmap from './pages/Roadmap';
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
-                
+                <Route path="/analytics" element={<AnalyticsDashboard />} />
+<Route path="/roadmap" element={<Roadmap />} />
                 <Route path="/my-paper-tests" element={<MyPaperTests />} />
                 <Route path="/paper-test/:id" element={<PaperTest />} />
                 <Route path="/" element={<Landing />} />
